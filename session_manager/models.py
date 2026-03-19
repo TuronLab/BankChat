@@ -16,7 +16,7 @@ class State(Enum):
     VERIFIED = "VERIFIED"
 
 
-class ChatIterations:
+class ChatIteration:
     client_message: str = None
     chat_message: str = None
     timestamp: datetime = None

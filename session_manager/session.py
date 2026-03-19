@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import List, NewType
 
-from session_manager.models import Client, State, ChatIterations
+from session_manager.models import Client, State, ChatIteration
 
 SessionId = NewType("SessionId", uuid.UUID)
 
@@ -25,7 +25,7 @@ class Session:
         self.client: Client = client
         self.state: State = State.VERIFYING
         self.session_creation: datetime = datetime.now()
-        self.chat_iterations: List[ChatIterations] = []
+        self.chat_iterations: List[ChatIteration] = []
 
     def update_state(self, new_state: State) -> None:
         """
@@ -36,11 +36,11 @@ class Session:
         """
         self.state = new_state
 
-    def add_chat_iteration(self, chat_iteration: ChatIterations) -> None:
+    def add_chat_iteration(self, chat_iteration: ChatIteration) -> None:
         """
         Add a new chat iteration to the session.
 
         Args:
-            chat_iteration (ChatIterations): The chat interaction to store.
+            chat_iteration (ChatIteration): The chat interaction to store.
         """
         self.chat_iterations.append(chat_iteration)
