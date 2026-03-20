@@ -1,0 +1,592 @@
+[
+  {
+    "name": "Lisa Müller",
+    "phone": "+4915123456789",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "de",
+    "accounts": [
+      {
+        "iban": "DE89370400440532013000",
+        "balance": 12500.50,
+        "currency": "EUR"
+      }
+    ],
+    "history": [
+      {"topic": "card issue", "date": "2025-01-10"}
+    ],
+    "intents": ["support"]
+  },
+  {
+    "name": "John Smith",
+    "phone": "+11234567890",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "en",
+    "accounts": [
+      {
+        "iban": "US12345678901234567890",
+        "balance": 3200.75,
+        "currency": "USD"
+      }
+    ],
+    "history": [],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Carlos García",
+    "phone": "+34600111222",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "es",
+    "accounts": [
+      {
+        "iban": "ES7921000813610123456789",
+        "balance": 54000.00,
+        "currency": "EUR"
+      }
+    ],
+    "history": [
+      {"topic": "loan", "date": "2024-11-01"}
+    ],
+    "intents": ["loan_request"]
+  },
+  {
+    "name": "Amina Khan",
+    "phone": "+447700900123",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "en",
+    "accounts": [
+      {
+        "iban": "GB29NWBK60161331926819",
+        "balance": 780.10,
+        "currency": "GBP"
+      }
+    ],
+    "history": [],
+    "intents": ["balance_check"]
+  },
+  {
+    "name": "Yuki Tanaka",
+    "phone": "+819012345678",
+    "customer_type": "premium",
+    "risk_level": "medium",
+    "preferred_language": "ja",
+    "accounts": [
+      {
+        "iban": "JP90000000000000000000",
+        "balance": 1500000,
+        "currency": "JPY"
+      }
+    ],
+    "history": [],
+    "intents": ["investment"]
+  },
+  {
+    "name": "Marie Dubois",
+    "phone": "+33612345678",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "fr",
+    "accounts": [
+      {
+        "iban": "FR7630006000011234567890189",
+        "balance": 4200.00,
+        "currency": "EUR"
+      }
+    ],
+    "history": [],
+    "intents": ["support"]
+  },
+  {
+    "name": "Ali Hassan",
+    "phone": "+971501234567",
+    "customer_type": "premium",
+    "risk_level": "high",
+    "preferred_language": "ar",
+    "accounts": [
+      {
+        "iban": "AE070331234567890123456",
+        "balance": 250000.00,
+        "currency": "AED"
+      }
+    ],
+    "history": [
+      {"topic": "fraud alert", "date": "2025-02-20"}
+    ],
+    "intents": ["fraud_report"]
+  },
+  {
+    "name": "Sofia Rossi",
+    "phone": "+393331234567",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "it",
+    "accounts": [
+      {
+        "iban": "IT60X0542811101000000123456",
+        "balance": 980.00,
+        "currency": "EUR"
+      }
+    ],
+    "history": [],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Peter Novak",
+    "phone": "+420601234567",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "cs",
+    "accounts": [
+      {
+        "iban": "CZ6508000000192000145399",
+        "balance": 30000.00,
+        "currency": "CZK"
+      }
+    ],
+    "history": [],
+    "intents": ["investment"]
+  },
+  {
+    "name": "Emma Johnson",
+    "phone": "+1-555-123-4567",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "en",
+    "accounts": [
+      {
+        "iban": "US09876543210987654321",
+        "balance": 1500.25,
+        "currency": "USD"
+      }
+    ],
+    "history": [],
+    "intents": ["support"]
+  },
+  {
+    "name": "David Lee",
+    "phone": "+85291234567",
+    "customer_type": "premium",
+    "risk_level": "medium",
+    "preferred_language": "en",
+    "accounts": [
+      {
+        "iban": "HK12345678901234567890",
+        "balance": 500000.00,
+        "currency": "HKD"
+      }
+    ],
+    "history": [],
+    "intents": ["loan_request"]
+  },
+  {
+    "name": "Olivia Brown",
+    "phone": "+61412345678",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "en",
+    "accounts": [
+      {
+        "iban": "AU123456789012345678",
+        "balance": 2200.00,
+        "currency": "AUD"
+      }
+    ],
+    "history": [],
+    "intents": ["balance_check"]
+  },
+  {
+    "name": "Lucas Silva",
+    "phone": "+5511999999999",
+    "customer_type": "premium",
+    "risk_level": "high",
+    "preferred_language": "pt",
+    "accounts": [
+      {
+        "iban": "BR15000000000000000000000000",
+        "balance": 100000.00,
+        "currency": "BRL"
+      }
+    ],
+    "history": [],
+    "intents": ["fraud_report"]
+  },
+  {
+    "name": "Chloe Martin",
+    "phone": "+33-612345678",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "fr",
+    "accounts": [
+      {
+        "iban": "FR7612345678901234567890123",
+        "balance": 3100.00,
+        "currency": "EUR"
+      }
+    ],
+    "history": [],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Ahmed Ali",
+    "phone": "+201001234567",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "ar",
+    "accounts": [
+      {
+        "iban": "EG123456789012345678901234",
+        "balance": 75000.00,
+        "currency": "EGP"
+      }
+    ],
+    "history": [],
+    "intents": ["investment"]
+  },
+  {
+    "name": "Hannah Müller",
+    "phone": "+491701112233",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "de",
+    "accounts": [
+      {
+        "iban": "DE44500105175407324931",
+        "balance": 1800.00,
+        "currency": "EUR"
+      }
+    ],
+    "history": [],
+    "intents": ["support"]
+  },
+  {
+    "name": "Ivan Petrov",
+    "phone": "+7-999-123-45-67",
+    "customer_type": "premium",
+    "risk_level": "medium",
+    "preferred_language": "ru",
+    "accounts": [
+      {
+        "iban": "RU12345678901234567890",
+        "balance": 900000.00,
+        "currency": "RUB"
+      }
+    ],
+    "history": [],
+    "intents": ["loan_request"]
+  },
+  {
+    "name": "Isabella Costa",
+    "phone": "+351912345678",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "pt",
+    "accounts": [
+      {
+        "iban": "PT50000201231234567890154",
+        "balance": 2750.50,
+        "currency": "EUR"
+      }
+    ],
+    "history": [],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Noah Williams",
+    "phone": "+1-202-555-0187",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "en",
+    "accounts": [
+      {
+        "iban": "US56789012345678901234",
+        "balance": 67000.00,
+        "currency": "USD"
+      }
+    ],
+    "history": [],
+    "intents": ["investment"]
+  },
+  {
+    "name": "Lisa Müller",
+    "phone": "+4915123456789",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "de",
+    "accounts": [
+      {"iban": "DE89370400440532013001", "balance": 12500.50, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "card blocked", "status": "resolved", "date": "2025-01-10"}
+    ],
+    "intents": ["insurance", "support"]
+  },
+  {
+    "name": "John Smith",
+    "phone": "+11234567890",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "GB29NWBK60161331926819", "balance": 3500.00, "currency": "GBP"}
+    ],
+    "history": [
+      {"topic": "loan request", "status": "pending", "date": "2025-02-01"}
+    ],
+    "intents": ["loan_request", "support"]
+  },
+  {
+    "name": "María Pérez",
+    "phone": "+34123456789",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "es",
+    "accounts": [
+      {"iban": "ES9121000418450200051332", "balance": 9800.25, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "account inquiry", "status": "resolved", "date": "2025-03-15"}
+    ],
+    "intents": ["support"]
+  },
+  {
+    "name": "Pierre Dupont",
+    "phone": "0612345678",
+    "customer_type": "regular",
+    "risk_level": "high",
+    "preferred_language": "fr",
+    "accounts": [
+      {"iban": "FR1420041010050500013M02606", "balance": 2500.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "complaint", "status": "resolved", "date": "2025-01-20"}
+    ],
+    "intents": ["complaint", "support"]
+  },
+  {
+    "name": "Akira Yamamoto",
+    "phone": "+819012345678",
+    "customer_type": "premium",
+    "risk_level": "medium",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "JP12BANK12345678901234", "balance": 20000.00, "currency": "JPY"}
+    ],
+    "history": [
+      {"topic": "transfer", "status": "resolved", "date": "2025-02-12"}
+    ],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Fatima Zahra",
+    "phone": "+212612345678",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "fr",
+    "accounts": [
+      {"iban": "MA61101010123456789012", "balance": 1500.75, "currency": "MAD"}
+    ],
+    "history": [
+      {"topic": "support", "status": "resolved", "date": "2025-03-01"}
+    ],
+    "intents": ["support", "insurance"]
+  },
+  {
+    "name": "Carlos Silva",
+    "phone": "912345678",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "es",
+    "accounts": [
+      {"iban": "PT50000201231234567890154", "balance": 12450.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "loan request", "status": "resolved", "date": "2025-01-30"}
+    ],
+    "intents": ["loan_request", "support"]
+  },
+  {
+    "name": "Sophia Rossi",
+    "phone": "+393391234567",
+    "customer_type": "regular",
+    "risk_level": "high",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "IT60X0542811101000000123456", "balance": 4500.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "complaint", "status": "pending", "date": "2025-02-15"}
+    ],
+    "intents": ["complaint"]
+  },
+  {
+    "name": "Liam O'Connor",
+    "phone": "+353851234567",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "IE29AIBK93115212345678", "balance": 7800.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "account inquiry", "status": "resolved", "date": "2025-01-25"}
+    ],
+    "intents": ["support"]
+  },
+  {
+    "name": "Emma Johansson",
+    "phone": "0731234567",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "fr",
+    "accounts": [
+      {"iban": "SE4550000000058398257466", "balance": 3200.00, "currency": "SEK"}
+    ],
+    "history": [
+      {"topic": "transfer", "status": "resolved", "date": "2025-02-10"}
+    ],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Mohammed Ali",
+    "phone": "+201234567890",
+    "customer_type": "premium",
+    "risk_level": "high",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "EG380019000500000123456789", "balance": 15000.00, "currency": "EGP"}
+    ],
+    "history": [
+      {"topic": "insurance", "status": "resolved", "date": "2025-01-18"}
+    ],
+    "intents": ["insurance"]
+  },
+  {
+    "name": "Chloe Dubois",
+    "phone": "0611223344",
+    "customer_type": "regular",
+    "risk_level": "low",
+    "preferred_language": "fr",
+    "accounts": [
+      {"iban": "FR7630006000011234567890189", "balance": 2200.50, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "support", "status": "resolved", "date": "2025-03-05"}
+    ],
+    "intents": ["support"]
+  },
+  {
+    "name": "Miguel Santos",
+    "phone": "+351912345678",
+    "customer_type": "premium",
+    "risk_level": "medium",
+    "preferred_language": "es",
+    "accounts": [
+      {"iban": "PT50000201231234567890155", "balance": 11200.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "loan request", "status": "resolved", "date": "2025-02-20"}
+    ],
+    "intents": ["loan_request"]
+  },
+  {
+    "name": "Anna Schmidt",
+    "phone": "+4915129876543",
+    "customer_type": "regular",
+    "risk_level": "high",
+    "preferred_language": "de",
+    "accounts": [
+      {"iban": "DE89370400440532013002", "balance": 3100.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "complaint", "status": "pending", "date": "2025-03-12"}
+    ],
+    "intents": ["complaint", "support"]
+  },
+  {
+    "name": "Oliver Brown",
+    "phone": "+447911123456",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "GB29NWBK60161331926820", "balance": 8000.00, "currency": "GBP"}
+    ],
+    "history": [
+      {"topic": "account inquiry", "status": "resolved", "date": "2025-02-05"}
+    ],
+    "intents": ["support"]
+  },
+  {
+    "name": "Yuki Tanaka",
+    "phone": "+819012398765",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "JP12BANK12345678901235", "balance": 5000.00, "currency": "JPY"}
+    ],
+    "history": [
+      {"topic": "transfer", "status": "resolved", "date": "2025-03-01"}
+    ],
+    "intents": ["transfer"]
+  },
+  {
+    "name": "Isabella Conti",
+    "phone": "+393391234568",
+    "customer_type": "premium",
+    "risk_level": "medium",
+    "preferred_language": "it",
+    "accounts": [
+      {"iban": "IT60X0542811101000000123457", "balance": 13400.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "insurance", "status": "resolved", "date": "2025-02-22"}
+    ],
+    "intents": ["insurance"]
+  },
+  {
+    "name": "Ahmed Khan",
+    "phone": "+923001234567",
+    "customer_type": "regular",
+    "risk_level": "high",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "PK12BANK0001234567890123", "balance": 2600.00, "currency": "PKR"}
+    ],
+    "history": [
+      {"topic": "complaint", "status": "pending", "date": "2025-03-10"}
+    ],
+    "intents": ["complaint"]
+  },
+  {
+    "name": "Sofia Garcia",
+    "phone": "+34123456780",
+    "customer_type": "premium",
+    "risk_level": "low",
+    "preferred_language": "es",
+    "accounts": [
+      {"iban": "ES9121000418450200051333", "balance": 14200.00, "currency": "EUR"}
+    ],
+    "history": [
+      {"topic": "support", "status": "resolved", "date": "2025-01-15"}
+    ],
+    "intents": ["support", "insurance"]
+  },
+  {
+    "name": "Lucas Martin",
+    "phone": "+5511998765432",
+    "customer_type": "regular",
+    "risk_level": "medium",
+    "preferred_language": "en",
+    "accounts": [
+      {"iban": "BR1800000000141458923210C1", "balance": 4700.00, "currency": "BRL"}
+    ],
+    "history": [
+      {"topic": "transfer", "status": "resolved", "date": "2025-02-18"}
+    ],
+    "intents": ["transfer"]
+  }
+]
