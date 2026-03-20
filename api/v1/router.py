@@ -15,6 +15,17 @@ def healthcheck():
     return JSONResponse(status_code=200, headers={"Live": "true"}, content="Ok")
 
 
+@router.get("/config")
+def get_conf():
+    return JSONResponse(
+        status_code=200,
+        content={
+            "manager": type(manager).__name__,
+            "repository": type(manager.repository).__name__,
+        }
+    )
+
+
 @router.post("/start", response_model=StartResponse)
 def start():
     session = manager.create_session(client=None)
