@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from starlette.responses import JSONResponse
 
 from session_manager.models import ChatIteration
 from session_manager.session_manager import SessionManager
@@ -8,6 +9,10 @@ from models import MessageRequest, StartResponse
 router = APIRouter()
 
 manager = SessionManager(NoStorageRepository())
+
+@router.get("/healthcheck")
+def healthcheck():
+    return JSONResponse(status_code=200, headers={"Live": "true"}, content="Ok")
 
 
 @router.post("/start", response_model=StartResponse)
