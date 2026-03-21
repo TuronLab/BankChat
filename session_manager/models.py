@@ -9,6 +9,7 @@ class Client:
     iban: str = None
     phone: str = None
     type_client: str = None
+    client_data: dict = None
 
 
 class State(Enum):
