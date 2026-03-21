@@ -5,6 +5,7 @@ from typing import Any, Dict
 from config import ASSETS_PATH
 from core.agents.models import GreeterAgentResponse
 from core.data.load_data import BaseDataLoader
+from core.session_manager.models import ChatMessage, Role
 from core.session_manager.session import Session
 from core.agents.agent_base import AgentWithInferencerBase
 from core.utils import read_markdown
@@ -76,30 +77,35 @@ class GreeterAgent(AgentWithInferencerBase):
 
         # Define the expected schema
         schema = {
-            "type": "object",
-            "properties": {
-                "name": {"type": ["string", "null"]},
-                "phone": {"type": ["string", "null"]},
-                "iban": {"type": ["string", "null"]},
-            },
-            "required": ["name", "phone", "iban"],
-            "additionalProperties": False,
+          "type": "json_schema",
+          "json_schema": {
+            "name": "user_contact_info",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "name": {"type": "string"},
+                "iban": {"type": "string"},
+                "phone": {"type": "string"}
+              },
+              "required": ["name", "iban", "phone"],
+              "additionalProperties": False
+            }
+          }
         }
 
         # Call structured inference
         structured_output = self.inferencer.generate_structured(
-            [
-                {
-                    "role": "user",
-                    "content": f"""
+            conversation = [
+                ChatMessage(
+                    role=Role.USER,
+                    message=f"""
 Extract the following information from this message:
 
 Message:
 {processed["original_message"]}
-""",
-                }
+""")
             ],
-            schema=schema,
+            output_schema=schema,
         )
 
         # If we have found information enough for the identification of the client
