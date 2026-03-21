@@ -35,7 +35,7 @@ class MockSession:
 
 # ---- IMPORT YOUR AGENT ----
 # Adjust this import to your actual project structure
-from core.agents.greeter_agent import DataExtractorAgent
+from core.agents.greeter_agent import GreeterAgent
 
 
 # ---- FIX read_markdown SIDE EFFECT ----
@@ -53,7 +53,7 @@ def agent(monkeypatch):
         fake_read_markdown
     )
 
-    return DataExtractorAgent(
+    return GreeterAgent(
         inferencer=MockInferencer(),
         database_loader=MockDatabaseLoader()
     )

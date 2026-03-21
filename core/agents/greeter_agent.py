@@ -10,7 +10,7 @@ from core.agents.agent_base import AgentWithInferencerBase
 from core.utils import read_markdown
 
 
-class DataExtractorAgent(AgentWithInferencerBase):
+class GreeterAgent(AgentWithInferencerBase):
     """
     Agent that extracts name, phone, and IBAN from a message.
 
