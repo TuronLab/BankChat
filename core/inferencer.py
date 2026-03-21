@@ -1,6 +1,7 @@
+import inspect
 import json
 from abc import abstractmethod, ABC
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Callable
 
 from core.session_manager.models import ChatMessage, Role
 from core.session_manager.session import Session
@@ -216,51 +217,124 @@ class OpenAIInferencer(BaseInferencer):
     # -------------------------
     # Tool calling
     # -------------------------
+    def _function_to_schema(self, func: Callable) -> Dict[str, Any]:
+        """
+        Converts a Python function into an OpenAI-compatible tool schema.
+        Automatically excludes the 'session' argument from the LLM's view.
+        """
+        sig = inspect.signature(func)
+        doc = inspect.getdoc(func) or "No description provided."
+
+        parameters = {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+
+        for name, param in sig.parameters.items():
+            # We skip 'session' because the LLM shouldn't try to provide it
+            if name == "session":
+                continue
+
+            # Simple type mapping
+            ptype = "string"
+            if param.annotation == int:
+                ptype = "integer"
+            elif param.annotation == float:
+                ptype = "number"
+            elif param.annotation == bool:
+                ptype = "boolean"
+            elif param.annotation == list:
+                ptype = "array"
+            elif param.annotation == dict:
+                ptype = "object"
+
+            parameters["properties"][name] = {
+                "type": ptype,
+                "description": f"The {name} parameter."  # Enhancement: parse from docstring
+            }
+
+            if param.default is inspect.Parameter.empty:
+                parameters["required"].append(name)
+
+        return {
+            "type": "function",
+            "function": {
+                "name": func.__name__,
+                "description": doc,
+                "parameters": parameters,
+            }
+        }
 
     def generate_with_tools(
-        self,
-        conversation: List[ChatMessage],
-        session: Session = None,
-        tools: list = [],
-        **kwargs: Any,
+            self,
+            conversation: List[ChatMessage],
+            session: Session = None,
+            tools: List[Callable] = [],
+            **kwargs: Any,
     ) -> str:
+        """
+        Accepts a list of Python functions, generates schemas, and executes them.
+        """
+        # 1. Map function names to objects and generate schemas
+        tool_map = {f.__name__: f for f in tools}
+        openai_tools = [self._function_to_schema(f) for f in tools]
 
         messages = self.build_conversation(conversation)
 
+        # 2. Call OpenAI
         response = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
-            tools=tools,
-            tool_choice="auto",
+            tools=openai_tools if openai_tools else None,
+            tool_choice="auto" if openai_tools else None,
             **kwargs,
         )
 
         message = response.choices[0].message
 
+        # 3. Handle Tool Calls
         if message.tool_calls:
             tool_results = []
 
-            for tool_call in message.tool_calls:
-                tool_name = tool_call.function.name
-                arguments = tool_call.function.arguments
+            # Add the assistant's call to the history first
+            conversation.append(ChatMessage(
+                role=Role.ASSISTANT,
+                message=message.content or "",
+                tool_calls=message.tool_calls  # Ensure your model supports this field
+            ))
 
-                result = self.execute_tool(tool_name, arguments)
+            for tool_call in message.tool_calls:
+                func_name = tool_call.function.name
+                func_obj = tool_map.get(func_name)
+
+                if not func_obj:
+                    result = f"Error: Tool {func_name} not found."
+                else:
+                    # Parse arguments from LLM
+                    args = json.loads(tool_call.function.arguments)
+
+                    # 4. Inject session if the function signature requires it
+                    sig = inspect.signature(func_obj)
+                    if "session" in sig.parameters:
+                        args["session"] = session
+
+                    try:
+                        result = func_obj(**args)
+                    except Exception as e:
+                        result = f"Error executing tool: {str(e)}"
 
                 tool_results.append(
                     ChatMessage(
                         role=Role.TOOL,
-                        message=str(result),
+                        message=json.dumps(result) if not isinstance(result, str) else result,
                         tool_call_id=tool_call.id
                     )
                 )
 
-            # Recurse with updated conversation
-            new_conversation = conversation + [
-                ChatMessage(role=Role.ASSISTANT, message=message.content or ""),
-            ] + tool_results
-
+            # Recurse with results
             return self.generate_with_tools(
-                new_conversation,
+                conversation + tool_results,
                 session=session,
                 tools=tools,
                 **kwargs,
