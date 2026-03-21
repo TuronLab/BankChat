@@ -1,8 +1,8 @@
 import os
 from datetime import datetime, timedelta
 
-from session_manager.session_repository import SessionRepository
-from session_manager.session import Session
+from core.session_manager.session_repository import SessionRepository
+from core.session_manager.session import Session
 
 
 class SessionManager:

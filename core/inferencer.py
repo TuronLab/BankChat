@@ -2,8 +2,8 @@ import json
 from abc import abstractmethod, ABC
 from typing import Optional, Dict, Any, List
 
-from session_manager.models import ChatMessage, Role
-from session_manager.session import Session
+from core.session_manager.models import ChatMessage, Role
+from core.session_manager.session import Session
 
 
 class BaseInferencer(ABC):

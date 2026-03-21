@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
 
-from session_manager.models import ChatMessage, Role
+from core.session_manager.models import ChatMessage, Role
 from core.inferencer import OpenAIInferencer
 
 

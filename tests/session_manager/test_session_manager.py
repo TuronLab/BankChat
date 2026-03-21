@@ -1,8 +1,8 @@
 import pytest
 
-from session_manager.models import Client
-from session_manager.session_manager import SessionManager
-from session_manager.session_repository import NoStorageRepository
+from core.session_manager.models import Client
+from core.session_manager.session_manager import SessionManager
+from core.session_manager.session_repository import NoStorageRepository
 
 
 def test_create_session():

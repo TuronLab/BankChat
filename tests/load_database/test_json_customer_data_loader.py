@@ -1,7 +1,7 @@
 import pytest
 from pathlib import Path
 
-from session_manager.models import Client
+from core.session_manager.models import Client
 from core.data.load_data import JSONCustomerDataLoader
 
 

@@ -1,4 +1,4 @@
-from session_manager.models import ChatMessage, Role
+from core.session_manager.models import ChatMessage, Role
 from core.inferencer import OpenAIInferencer
 
 def test_format_messages_user():

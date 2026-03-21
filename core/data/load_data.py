@@ -6,7 +6,7 @@ from typing import List, Dict, Optional
 import unicodedata
 import re
 
-from session_manager.models import Client
+from core.session_manager.models import Client
 
 
 class BaseDataLoader(ABC):

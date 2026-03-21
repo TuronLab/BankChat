@@ -1,8 +1,8 @@
 import pytest
 
-from session_manager.models import Client
-from session_manager.session import Session
-from session_manager.session_repository import NoStorageRepository
+from core.session_manager.models import Client
+from core.session_manager.session import Session
+from core.session_manager.session_repository import NoStorageRepository
 
 
 def test_save_and_get_session():

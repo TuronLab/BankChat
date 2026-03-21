@@ -1,6 +1,6 @@
 import abc
 from typing import Dict
-from session_manager.session import Session, SessionId
+from core.session_manager.session import Session, SessionId
 
 
 class SessionRepository(abc.ABC):

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import List, NewType
 
-from session_manager.models import Client, State, ChatMessage
+from core.session_manager.models import Client, State, ChatMessage
 
 SessionId = NewType("SessionId", uuid.UUID)
 
