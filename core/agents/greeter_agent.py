@@ -121,9 +121,3 @@ Message:
                 )
 
         return GreeterAgentResponse(message=read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "error_authentication.md")))
-
-    def postprocess(self, message: Dict[str, Any], session: Session) -> Dict[str, Any]:
-        """
-        Optional postprocessing step (e.g., normalization).
-        """
-        return message
