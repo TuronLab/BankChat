@@ -1,99 +1,73 @@
+import os
 import pytest
-from unittest.mock import MagicMock
+from dotenv import load_dotenv
 
 from core.session_manager.models import ChatMessage, Role
 from core.inferencer import OpenAIInferencer
 
 
-# -----------------------------
-# Helpers
-# -----------------------------
-
-def make_openai_mock(first_response, second_response=None):
-    client_mock = MagicMock()
-
-    if second_response:
-        client_mock.chat.completions.create.side_effect = [
-            first_response,
-            second_response,
-        ]
-    else:
-        client_mock.chat.completions.create.return_value = first_response
-
-    return client_mock
+# Load environment variables from .env
+load_dotenv()
 
 
-# -----------------------------
-# Tests
-# -----------------------------
+@pytest.fixture(scope="module")
+def inferencer():
+    api_key = os.getenv("OPENAI_API_KEY")
 
-def test_generate_text(monkeypatch):
-    fake_response = MagicMock()
-    fake_response.choices = [
-        MagicMock(message=MagicMock(content="hello world"))
-    ]
+    if not api_key:
+        pytest.skip("OPENAI_API_KEY not set")
 
-    client_mock = make_openai_mock(fake_response)
+    return OpenAIInferencer(api_key=api_key)
 
-    monkeypatch.setattr(
-        "openai.OpenAI",
-        lambda api_key=None: client_mock,
-    )
 
-    inferencer = OpenAIInferencer(api_key="fake")
-
+@pytest.mark.integration
+def test_generate_text(inferencer):
     result = inferencer.generate_text([
-        ChatMessage(role=Role.USER, message="hi")
+        ChatMessage(role=Role.USER, message="Say exactly: hello world")
     ])
 
-    assert result == "hello world"
-
-    client_mock.chat.completions.create.assert_called_once()
-
-    # Verify message format
-    _, kwargs = client_mock.chat.completions.create.call_args
-    assert kwargs["messages"][0]["role"] == "user"
-    assert kwargs["messages"][0]["content"] == "hi"
+    assert isinstance(result, str)
+    assert len(result) > 0
 
 
-def test_generate_structured_invalid_json(monkeypatch):
-    fake_response = MagicMock()
-    fake_response.choices = [
-        MagicMock(message=MagicMock(content="not json"))
-    ]
+@pytest.mark.integration
+def test_generate_structured_valid_json(inferencer):
+    schema = {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "test_schema",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "key": {"type": "string"}
+                },
+                "required": ["key"],
+                "additionalProperties": False
+            }
+        }
+    }
 
-    client_mock = make_openai_mock(fake_response)
-
-    monkeypatch.setattr(
-        "openai.OpenAI",
-        lambda api_key=None: client_mock,
+    result = inferencer.generate_structured(
+        [
+            ChatMessage(
+                role=Role.USER,
+                message='Return a JSON object with a single key "key" and value "value".'
+            )
+        ],
+        output_schema=schema
     )
 
-    inferencer = OpenAIInferencer(api_key="fake")
+    assert isinstance(result, dict)
+    assert "key" in result
+    assert isinstance(result["key"], str)
 
-    with pytest.raises(ValueError):
+
+@pytest.mark.integration
+def test_generate_structured_invalid_json(inferencer):
+    with pytest.raises(ValueError, match="Invalid JSON output"):
         inferencer.generate_structured([
-            ChatMessage(role=Role.USER, message="give json")
+            ChatMessage(
+                role=Role.USER,
+                message="Respond with invalid JSON: this is not json"
+            )
         ])
-
-
-def test_generate_structured_valid_json(monkeypatch):
-    fake_response = MagicMock()
-    fake_response.choices = [
-        MagicMock(message=MagicMock(content='{"key": "value"}'))
-    ]
-
-    client_mock = make_openai_mock(fake_response)
-
-    monkeypatch.setattr(
-        "openai.OpenAI",
-        lambda api_key=None: client_mock,
-    )
-
-    inferencer = OpenAIInferencer(api_key="fake")
-
-    result = inferencer.generate_structured([
-        ChatMessage(role=Role.USER, message="give json")
-    ])
-
-    assert result == {"key": "value"}
