@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, List, Any
 
 
 @dataclass
@@ -27,4 +27,5 @@ class ChatMessage:
     role: Role
     message: str
     tool_call_id: str = None
+    tool_calls: Optional[List[Any]] = None
 

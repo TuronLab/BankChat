@@ -143,17 +143,25 @@ class OpenAIInferencer(BaseInferencer):
     # -------------------------
 
     def format_messages(self, message: ChatMessage) -> Dict[str, Any]:
-        if message.role != Role.TOOL:
-            return {
-                "role": message.role.value,
-                "content": message.message,
-            }
-        else:
-            return {
-                "role": message.role.value,
-                "content": message.message,
-                "tool_call_id": message.tool_call_id,
-            }
+        """Converts ChatMessage to OpenAI format, handling both Enums and strings."""
+
+        # Check if role has a .value (Enum), otherwise use it as is (string)
+        role_name = message.role.value if hasattr(message.role, "value") else message.role
+
+        payload = {
+            "role": role_name,
+            "content": message.message,
+        }
+
+        # Assistant messages MUST include tool_calls if they exist
+        if message.tool_calls:
+            payload["tool_calls"] = message.tool_calls
+
+        # Tool messages MUST include the tool_call_id
+        if message.tool_call_id:
+            payload["tool_call_id"] = message.tool_call_id
+
+        return payload
 
     def build_conversation(
         self, conversation: List[ChatMessage]
@@ -270,20 +278,16 @@ class OpenAIInferencer(BaseInferencer):
     def generate_with_tools(
             self,
             conversation: List[ChatMessage],
-            session: Session = None,
+            session: Any = None,
             tools: List[Callable] = [],
             **kwargs: Any,
     ) -> str:
-        """
-        Accepts a list of Python functions, generates schemas, and executes them.
-        """
-        # 1. Map function names to objects and generate schemas
+        """Executes a tool-augmented loop with automated session injection."""
         tool_map = {f.__name__: f for f in tools}
         openai_tools = [self._function_to_schema(f) for f in tools]
 
         messages = self.build_conversation(conversation)
 
-        # 2. Call OpenAI
         response = self.client.chat.completions.create(
             model=self.model,
             messages=messages,
@@ -292,30 +296,28 @@ class OpenAIInferencer(BaseInferencer):
             **kwargs,
         )
 
-        message = response.choices[0].message
+        message_obj = response.choices[0].message
 
-        # 3. Handle Tool Calls
-        if message.tool_calls:
-            tool_results = []
-
-            # Add the assistant's call to the history first
+        if message_obj.tool_calls:
+            # 1. Store the Assistant's request (including tool_calls)
             conversation.append(ChatMessage(
-                role=Role.ASSISTANT,
-                message=message.content or "",
-                tool_calls=message.tool_calls  # Ensure your model supports this field
+                role=message_obj.role,  # Role.ASSISTANT
+                message=message_obj.content,
+                tool_calls=message_obj.tool_calls
             ))
 
-            for tool_call in message.tool_calls:
+            # 2. Execute the tools
+            tool_messages = []
+            for tool_call in message_obj.tool_calls:
                 func_name = tool_call.function.name
                 func_obj = tool_map.get(func_name)
 
                 if not func_obj:
                     result = f"Error: Tool {func_name} not found."
                 else:
-                    # Parse arguments from LLM
                     args = json.loads(tool_call.function.arguments)
 
-                    # 4. Inject session if the function signature requires it
+                    # Inject session if required
                     sig = inspect.signature(func_obj)
                     if "session" in sig.parameters:
                         args["session"] = session
@@ -323,22 +325,20 @@ class OpenAIInferencer(BaseInferencer):
                     try:
                         result = func_obj(**args)
                     except Exception as e:
-                        result = f"Error executing tool: {str(e)}"
+                        result = f"Error: {str(e)}"
 
-                tool_results.append(
-                    ChatMessage(
-                        role=Role.TOOL,
-                        message=json.dumps(result) if not isinstance(result, str) else result,
-                        tool_call_id=tool_call.id
-                    )
-                )
+                tool_messages.append(ChatMessage(
+                    role="tool",  # Using string if Enum not available, else Role.TOOL
+                    message=json.dumps(result) if not isinstance(result, str) else result,
+                    tool_call_id=tool_call.id
+                ))
 
-            # Recurse with results
+            # 3. Recurse with the full history (Assistant Call + Tool Responses)
             return self.generate_with_tools(
-                conversation + tool_results,
+                conversation + tool_messages,
                 session=session,
                 tools=tools,
-                **kwargs,
+                **kwargs
             )
 
-        return message.content
+        return message_obj.content
