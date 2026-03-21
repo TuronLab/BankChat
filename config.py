@@ -49,3 +49,5 @@ def config_logger(log_file, used_by='MONITOR'):
 project_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG_PATH = os.environ.get("LOG_PATH",  os.path.join(project_path, ".logs"))
 CHAT_LOGGER = config_logger(os.path.join(LOG_PATH, "chat.log"), 'BANK_CHAT')
+
+ASSETS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
