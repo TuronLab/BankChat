@@ -7,20 +7,21 @@ from core.data.load_data import JSONCustomerDataLoader
 
 # ---------- Helpers ----------
 
-def write_jsonl(tmp_path: Path, lines: str) -> Path:
-    file = tmp_path / "data.jsonl"
-    file.write_text(lines, encoding="utf-8")
+import json
+
+def write_json(tmp_path: Path, data: list[dict]) -> Path:
+    file = tmp_path / "data.json"
+    file.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     return file
 
 
 # ---------- Tests ----------
 
 def test_load_all(tmp_path):
-    file = write_jsonl(
-        tmp_path,
-        '{"name": "John Doe", "phone": "+34123456789", "type_client": "retail"}\n'
-        '{"name": "Jane Doe", "phone": "+44123456789", "type_client": "business"}\n'
-    )
+    file = write_json(tmp_path, [
+        {"name": "John Doe", "phone": "+34123456789", "type_client": "retail"},
+        {"name": "Jane Doe", "phone": "+44123456789", "type_client": "business"}
+    ])
 
     loader = JSONCustomerDataLoader(file)
     data = loader.load_all(file)
@@ -33,10 +34,14 @@ def test_load_all(tmp_path):
 
 
 def test_find_customer_by_name_and_phone(tmp_path):
-    file = write_jsonl(
-        tmp_path,
-        '{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", "accounts": []}\n'
-    )
+    file = write_json(tmp_path, [
+        {
+            "name": "John Doe",
+            "phone": "+34123456789",
+            "type_client": "retail",
+            "accounts": []
+        }
+    ])
 
     loader = JSONCustomerDataLoader(file)
 
@@ -48,10 +53,9 @@ def test_find_customer_by_name_and_phone(tmp_path):
 
 
 def test_find_customer_name_normalization(tmp_path):
-    file = write_jsonl(
-        tmp_path,
-        '{"name": "José García", "phone": "+34111111111", "type_client": "retail", "accounts": []}\n'
-    )
+    file = write_json(tmp_path, [
+        {"name": "José García", "phone": "+34111111111", "type_client": "retail", "accounts": []}
+    ])
 
     loader = JSONCustomerDataLoader(file)
 
@@ -65,9 +69,9 @@ def test_find_customer_name_normalization(tmp_path):
 
 
 def test_find_customer_phone_normalization(tmp_path):
-    file = write_jsonl(
+    file = write_json(
         tmp_path,
-        '{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", "accounts": []}\n'
+        [{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", "accounts": []}]
     )
 
     loader = JSONCustomerDataLoader(file)
@@ -81,10 +85,9 @@ def test_find_customer_phone_normalization(tmp_path):
 
 
 def test_find_customer_by_iban(tmp_path):
-    file = write_jsonl(
+    file = write_json(
         tmp_path,
-        '{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", '
-        '"accounts": [{"iban": "ES12 3456 7890"}]}\n'
+        [{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", "accounts": [{"iban": "ES12 3456 7890"}]}]
     )
 
     loader = JSONCustomerDataLoader(file)
@@ -99,9 +102,9 @@ def test_find_customer_by_iban(tmp_path):
 
 
 def test_find_customer_requires_two_fields(tmp_path):
-    file = write_jsonl(
+    file = write_json(
         tmp_path,
-        '{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", "accounts": []}\n'
+        [{"name": "John Doe", "phone": "+34123456789", "type_client": "retail", "accounts": []}]
     )
 
     loader = JSONCustomerDataLoader(file)
