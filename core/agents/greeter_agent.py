@@ -107,7 +107,6 @@ Message:
             customer = self.database_loader.find_customer(name=structured_output.get("name"), phone=structured_output.get("phone"), iban=structured_output.get("iban"))
             # If we have found him in the database
             if customer is not None:
-                session.client = customer
                 return GreeterAgentResponse(
                     client=customer,
                     message=read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "successful_logging_message.md"))
