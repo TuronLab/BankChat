@@ -204,6 +204,7 @@ class OpenAIInferencer(BaseInferencer):
             messages=messages,
             max_tokens=max_tokens,
             temperature=temperature,
+            response_format=output_schema,
             **kwargs,
         )
 
