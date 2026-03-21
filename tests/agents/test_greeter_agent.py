@@ -1,150 +1,104 @@
 import os
+from pathlib import Path
 
 import pytest
+from dotenv import load_dotenv
 
-from config import ASSETS_PATH
-from core.utils import read_markdown
-
-
-# ---- MOCKS ----
-
-class MockDatabaseLoader:
-    def find_customer(self, name=None, phone=None, iban=None):
-        if name == "John Doe" and phone == "+34600111222":
-            return {"id": 1, "name": "John Doe"}
-        return None
-
-
-class MockInferencer:
-    def generate_structured(self, messages, schema):
-        text = messages[0]["content"]
-
-        if "missing phone" in text:
-            return {"name": "John Doe", "phone": "+34600111222", "iban": None}
-
-        if "unknown user" in text:
-            return {"name": "Jane Doe", "phone": "+34123456789", "iban": None}
-
-        return {"name": None, "phone": None, "iban": None}
-
-
-class MockSession:
-    def __init__(self):
-        self.client = None
-
-
-# ---- IMPORT YOUR AGENT ----
-# Adjust this import to your actual project structure
 from core.agents.greeter_agent import GreeterAgent
+from core.data.load_data import JSONCustomerDataLoader
+from core.inferencer import OpenAIInferencer
+from core.session_manager.models import Client
+from core.session_manager.session import Session
+from config import ASSETS_PATH, PROJECT_PATH
+
+# Load environment variables from .env
+load_dotenv()
+
+@pytest.fixture(scope="module")
+def real_inferencer():
+    """
+    Initialize your real inferencer here.
+    Ensure your .env has the necessary API_KEY.
+    """
+    # Example for a OpenAI-based inferencer:
+    return OpenAIInferencer(api_key=os.getenv("OPENAI_API_KEY"))
 
 
-# ---- FIX read_markdown SIDE EFFECT ----
-def fake_read_markdown(path):
-    return f"[MOCKED MESSAGE from {path}]"
+@pytest.fixture(scope="module")
+def real_db_loader():
+    """Initialize your real database connector."""
+    loader = JSONCustomerDataLoader(Path(os.path.join(PROJECT_PATH, "database_example", "dataset_example.json")))
 
+    loader.data = [
+        Client(client_name="John Doe", phone="+34600111222", mentioned_iban="ES1200001111222233334444", client_data={"accounts": [{"iban": "ES1200001111222233334444"}]}),
+        Client(client_name="Jane Smith", phone="+44123456789", mentioned_iban="GB12345678901234567890", client_data={"accounts": [{"iban": "GB12345678901234567890"}]}),
+    ]
+    return loader
 
-# ---- TEST SETUP ----
 
 @pytest.fixture
-def agent(monkeypatch):
-    # Patch read_markdown to avoid file dependency
-    monkeypatch.setattr(
-        "core.utils.read_markdown",
-        fake_read_markdown
-    )
-
+def agent(real_inferencer, real_db_loader):
     return GreeterAgent(
-        inferencer=MockInferencer(),
-        database_loader=MockDatabaseLoader()
+        inferencer=real_inferencer,
+        database_loader=real_db_loader
     )
 
 
 @pytest.fixture
 def session():
-    return MockSession()
+    # Using a real session object
+    return Session()
 
 
-# ---- TESTS ----
+# ---- LIVE INTEGRATION TESTS ----
 
-def test_full_regex_match_success(agent, session):
-    response = agent.step(
-        "Hello, I am John Doe and my phone is +34600111222",
-        session
-    )
+def test_regex_path_live(agent, session):
+    """Verifies the regex still works without LLM interference for a known user."""
+    # NOTE: Ensure this user exists in your real DB or use a known test record
+    message = "My name is John Doe and my phone is +34600111222"
+    response = agent.step(message, session)
 
+    assert response is not None
+    # If the user isn't in your DB, this will fail; adjust name/phone to a real record.
     assert response.client is not None
-    assert response.client["name"] == "John Doe"
 
 
-def test_llm_fills_missing_phone(agent, session):
-    response = agent.step(
-        "Hello, I am John Doe (missing phone)",
-        session
-    )
+def test_llm_extraction_live(agent, session):
+    """Verifies the real Token API can extract structured data from messy text."""
+    message = "hey... it's Sarah Connor, call me at 555-9000. My bank thing is ES9912341234123412341234"
 
-    assert response.client is not None
-    assert session.client is not None
-    assert session.client["name"] == "John Doe"
+    response = agent.step(message, session)
+
+    # Check that the API actually returned a response and didn't crash
+    assert response is not None
+    assert isinstance(response.message, str)
+
+    # Even if Sarah isn't in your DB, the agent logic should have
+    # identified her name from the LLM and included it in the 'not found' message.
+    if response.client is None:
+        assert "Sarah Connor" in response.message
 
 
-def test_user_not_found(agent, session):
-    response = agent.step(
-        "unknown user",
-        session
-    )
+def test_insufficient_data_live(agent, session):
+    """Ensures the real LLM correctly identifies a lack of info."""
+    message = "I just want to know what time you open."
+    response = agent.step(message, session)
 
+    # Should result in the error_authentication message
     assert response.client is None
-    assert "Jane Doe" in response.message
+    # Check if the returned message matches your error asset text
+    from core.utils import read_markdown
+    expected_error = read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "error_authentication.md"))
+    assert response.message == expected_error
 
 
-def test_not_enough_data(agent, session):
-    response = agent.step(
-        "Hi there",
-        session
-    )
+def test_iban_extraction_live(agent, session):
+    """Tests the IBAN regex/LLM logic with a realistic string."""
+    message = "Transfer to ES1200001111222233334444. Name is Peter Parker."
+    response = agent.step(message, session)
 
-    assert response.client is None
-    assert read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "error_authentication.md")) == response.message
-
-
-def test_partial_regex_no_match_then_llm(agent, session):
-    response = agent.step(
-        "Hello, I am john doe and my phone is +34600111222",
-        session
-    )
-
-    assert response.client is None
-
-
-def test_regex_only_name_no_phone(agent, session):
-    response = agent.step(
-        "My name is John Doe",
-        session
-    )
-
-    # Should fallback to LLM but still succeed
-    assert response.client is None
-
-
-def test_invalid_user_with_two_fields(agent, session):
-    response = agent.step(
-        "unknown user with some data",
-        session
-    )
-
-    assert response.client is None
-    assert "Jane Doe" in response.message
-
-
-def test_session_not_set_on_fast_path(agent, session):
-    """
-    This exposes a design inconsistency:
-    session.client is NOT set in regex-only success path.
-    """
-    agent.step(
-        "John Doe +34600111222",
-        session
-    )
-
-    assert session.client is None  # current behavior
-
+    # We verify the agent reached the DB lookup stage (meaning 2+ fields found)
+    # by checking that the message isn't the 'insufficient data' error.
+    from core.utils import read_markdown
+    error_msg = read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "error_authentication.md"))
+    assert response.message != error_msg

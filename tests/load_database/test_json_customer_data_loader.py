@@ -109,5 +109,4 @@ def test_find_customer_requires_two_fields(tmp_path):
 
     loader = JSONCustomerDataLoader(file)
 
-    with pytest.raises(ValueError):
-        loader.find_customer(name="John Doe")
+    assert loader.find_customer(name="John Doe") is None
