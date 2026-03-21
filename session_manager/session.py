@@ -14,7 +14,7 @@ class Session:
     conversational data. It does NOT handle persistence.
     """
 
-    def __init__(self, client: Client):
+    def __init__(self, client: Client = None):
         """
         Initialize a new session.
 
