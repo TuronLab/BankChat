@@ -126,7 +126,7 @@ class JSONCustomerDataLoader(BaseDataLoader):
         """
         provided_fields = [name, phone, iban]
         if sum(field is not None for field in provided_fields) < 2:
-            raise ValueError("At least two fields must be provided for search.")
+            return None
 
         normalized_name = self._normalize_name(name) if name else None
         normalized_phone = self._normalize_phone(phone) if phone else None
