@@ -28,7 +28,7 @@ class DataExtractorAgent(AgentWithInferencerBase):
         super().__init__(inferencer=inferencer)
         self.database_loader = database_loader
 
-    def preprocess(self, message: str, session: Session) -> Dict[str, Any]:
+    def try_find_user_data_with_regex(self, message: str) -> Dict[str, Any]:
         """
         Extract available data using regex.
         """
@@ -59,7 +59,7 @@ class DataExtractorAgent(AgentWithInferencerBase):
         - If regex finds everything → return immediately.
         - Otherwise → call generate_structured for missing fields.
         """
-        processed = self.preprocess(message, session)
+        processed = self.try_find_user_data_with_regex(message)
         extracted = processed["extracted"]
 
         # If everything is already found, return early
