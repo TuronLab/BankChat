@@ -16,9 +16,15 @@ class State(Enum):
     VERIFYING = "VERIFYING"
     VERIFIED = "VERIFIED"
 
+class Role(Enum):
+    SYSTEM = "system"
+    USER = "user"
+    ASSISTANT = "assistant"
+    TOOL = "tool"
 
-class ChatIteration:
-    client_message: str = None
-    chat_message: str = None
-    timestamp: datetime = None
+@dataclass
+class ChatMessage:
+    role: Role
+    message: str
+    tool_call_id: str = None
 
