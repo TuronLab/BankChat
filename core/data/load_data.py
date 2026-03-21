@@ -1,9 +1,12 @@
 import json
 from abc import ABC, abstractmethod
+from copy import deepcopy
 from pathlib import Path
 from typing import List, Dict, Optional
 import unicodedata
 import re
+
+from session_manager.models import Client
 
 
 class BaseDataLoader(ABC):
@@ -15,7 +18,12 @@ class BaseDataLoader(ABC):
     """
 
     @abstractmethod
-    def load_all(self, data_path: Path) -> List[Dict]:
+    def _dump_data_to_client_object(self, client_data: dict):
+        pass
+
+    @staticmethod
+    @abstractmethod
+    def load_all(data_path: Path) -> List[Client]:
         """
         Load all records from the data source.
 
@@ -30,7 +38,7 @@ class BaseDataLoader(ABC):
         name: Optional[str] = None,
         phone: Optional[str] = None,
         iban: Optional[str] = None,
-    ) -> Optional[Dict]:
+    ) -> Optional[Client]:
         """
         Find a customer using at least two identifiers.
 
@@ -67,7 +75,17 @@ class JSONCustomerDataLoader(BaseDataLoader):
         """
         self.data = self.load_all(data_path)
 
-    def load_all(self, data_path: Path) -> List[Dict]:
+    @staticmethod
+    def _dump_data_to_client_object(client_data: dict):
+        return Client(
+            client_name=client_data.get("name"),
+            phone=client_data.get("phone"),
+            mentioned_iban=None,
+            type_client=client_data.get("type_client"),
+            client_data=client_data
+        )
+
+    def load_all(self, data_path: Path) -> List[Client]:
         """
         Return all customer records.
 
@@ -80,7 +98,7 @@ class JSONCustomerDataLoader(BaseDataLoader):
             for line in f:
                 line = line.strip()
                 if line:  # skip empty lines
-                    data.append(json.loads(line))
+                    data.append(self._dump_data_to_client_object(json.loads(line)))
 
         return data
 
@@ -89,7 +107,7 @@ class JSONCustomerDataLoader(BaseDataLoader):
         name: Optional[str] = None,
         phone: Optional[str] = None,
         iban: Optional[str] = None,
-    ) -> Optional[Dict]:
+    ) -> Optional[Client]:
         """
         Find a customer requiring at least two matching fields.
 
@@ -104,7 +122,7 @@ class JSONCustomerDataLoader(BaseDataLoader):
             iban (Optional[str]): IBAN.
 
         Returns:
-            Optional[Dict]: Matching customer or None.
+            Optional[Client]: Matching customer or None.
 
         Raises:
             ValueError: If fewer than two fields are provided.
@@ -122,26 +140,30 @@ class JSONCustomerDataLoader(BaseDataLoader):
 
             # Name matching
             if normalized_name:
-                customer_name = self._normalize_name(customer.get("name"))
+                customer_name = self._normalize_name(customer.client_name)
                 if customer_name == normalized_name:
                     matches += 1
 
             # Phone matching
             if normalized_phone:
-                customer_phone = self._normalize_phone(customer.get("phone"))
+                customer_phone = self._normalize_phone(customer.phone)
                 if customer_phone == phone or self._normalize_phone(phone) == self._normalize_phone(customer_phone):
                     matches += 1
 
             # IBAN matching
+            mentioned_iban = None
             if normalized_iban:
-                for acc in customer.get("accounts", []):
+                for acc in customer.client_data.get("accounts", []):
                     customer_iban = self._normalize_iban(acc.get("iban"))
                     if customer_iban == normalized_iban:
+                        mentioned_iban = acc.get("iban")
                         matches += 1
                         break
 
             if matches >= 2:
-                return customer
+                client_found = deepcopy(customer)
+                client_found.mentioned_iban = mentioned_iban
+                return client_found
 
         return None
 

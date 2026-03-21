@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 
 @dataclass
 class Client:
     client_name: str = None
-    iban: str = None
+    mentioned_iban: Optional[str] = None
     phone: str = None
     type_client: str = None
     client_data: dict = None
