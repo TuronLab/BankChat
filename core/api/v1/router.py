@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
-from session_manager.models import ChatIteration
-from session_manager.session_manager import SessionManager
-from session_manager.session_repository import NoStorageRepository
-from models import MessageRequest, StartResponse
+from core.session_manager.models import ChatMessage
+from core.session_manager.session_manager import SessionManager
+from core.session_manager.session_repository import NoStorageRepository
+from models import Response, StartResponse
 
 router = APIRouter()
 
@@ -26,17 +26,18 @@ def get_conf():
     )
 
 
-@router.post("/start", response_model=StartResponse)
+@router.post("/start", response_model=Response)
 def start():
     session = manager.create_session(client=None)
 
-    return StartResponse(
-        session_id=str(session.session_id)
+    return Response(
+        session_id=str(session.session_id),
+        message=welcome_message
     )
 
 
 @router.post("/message")
-def message(req: MessageRequest):
+def message(req: Response):
     try:
         session = manager.get_session(req.session_id)
     except KeyError:
@@ -45,7 +46,7 @@ def message(req: MessageRequest):
     response = f"Echo: {req.message}"
 
     session.add_chat_iteration(
-        ChatIteration(
+        ChatMessage(
 
         )
     )
