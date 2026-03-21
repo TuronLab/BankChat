@@ -1,10 +1,14 @@
+import os
+
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
+from config import ASSETS_PATH
 from core.session_manager.models import ChatMessage
 from core.session_manager.session_manager import SessionManager
 from core.session_manager.session_repository import NoStorageRepository
-from models import Response, StartResponse
+from core.utils import read_markdown
+from models import Response
 
 router = APIRouter()
 
@@ -32,7 +36,7 @@ def start():
 
     return Response(
         session_id=str(session.session_id),
-        message=welcome_message
+        message=read_markdown(os.path.join(ASSETS_PATH, "welcome_message.md"))
     )
 
 
