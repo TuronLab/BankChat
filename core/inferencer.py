@@ -1,6 +1,7 @@
 import inspect
 import json
 from abc import abstractmethod, ABC
+from copy import deepcopy
 from typing import Optional, Dict, Any, List, Callable
 
 from core.session_manager.models import ChatMessage, Role
@@ -99,7 +100,7 @@ class BaseInferencer(ABC):
     def generate_with_tools(
         self,
         conversation: List[ChatMessage],
-        session: Session = None,
+        session: Session,
         tools: list = [],
         **kwargs: Any,
     ) -> str:
@@ -283,6 +284,7 @@ class OpenAIInferencer(BaseInferencer):
             **kwargs: Any,
     ) -> str:
         """Executes a tool-augmented loop with automated session injection."""
+        conversation = deepcopy(conversation)
         tool_map = {f.__name__: f for f in tools}
         openai_tools = [self._function_to_schema(f) for f in tools]
 
@@ -301,7 +303,7 @@ class OpenAIInferencer(BaseInferencer):
         if message_obj.tool_calls:
             # 1. Store the Assistant's request (including tool_calls)
             conversation.append(ChatMessage(
-                role=message_obj.role,  # Role.ASSISTANT
+                role=Role.ASSISTANT,
                 message=message_obj.content,
                 tool_calls=message_obj.tool_calls
             ))
@@ -328,7 +330,7 @@ class OpenAIInferencer(BaseInferencer):
                         result = f"Error: {str(e)}"
 
                 tool_messages.append(ChatMessage(
-                    role="tool",  # Using string if Enum not available, else Role.TOOL
+                    role=Role.TOOL,
                     message=json.dumps(result) if not isinstance(result, str) else result,
                     tool_call_id=tool_call.id
                 ))
