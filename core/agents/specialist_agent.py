@@ -1,7 +1,7 @@
 import os
 from typing import Any, List
 
-from config import ASSETS_PATH
+from config import ASSETS_PATH, CHAT_LOGGER
 from core.session_manager.models import ChatMessage, Role
 from core.session_manager.session import Session
 from core.agents.agent_base import AgentWithInferencerBase
@@ -190,8 +190,10 @@ class SpecialistAgent(AgentWithInferencerBase):
             str: The final response returned to the user.
         """
 
+        CHAT_LOGGER.info("Checking user's malicious intentions")
         intentions = self.check_user_intentions(message)
         if intentions is not None:
+            CHAT_LOGGER.warning(f"We have found user's malicious intentions: {intentions}")
             return intentions
 
         # We incorporate the petitions
@@ -199,6 +201,7 @@ class SpecialistAgent(AgentWithInferencerBase):
                                     ChatMessage(role=Role.SYSTEM,
                                                 message=read_markdown(os.path.join(ASSETS_PATH, "specialist_agent", "specialist.md")))]
 
+        CHAT_LOGGER.info("Processing user's query")
         # Call structured inference
         tool_response = self.inferencer.generate_with_tools(
             conversation=session.chat_iterations,
@@ -206,6 +209,7 @@ class SpecialistAgent(AgentWithInferencerBase):
             tools=self.available_tools
         )
 
+        CHAT_LOGGER.info("Post-processing response to align result with internal policies")
         # Filter any kind of violations
         final_response = self.post_process_checking_manifest_violations(message, tool_response)
 
