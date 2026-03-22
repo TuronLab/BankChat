@@ -46,6 +46,9 @@ def config_logger(log_file, used_by='MONITOR'):
 
     return logger
 
+OPENAI_KEY = os.getenv("OPENAI_API_KEY", None)
+
+
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 LOG_PATH = os.environ.get("LOG_PATH",  os.path.join(PROJECT_PATH, ".logs"))
 CHAT_LOGGER = config_logger(os.path.join(LOG_PATH, "chat.log"), 'BANK_CHAT')
