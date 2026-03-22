@@ -165,7 +165,7 @@ class SpecialistAgent(AgentWithInferencerBase):
             output_schema=schema
         )
 
-        if manifest_response.get("is_ok", True) and manifest_response.get("corrected_message", ""):
+        if manifest_response.get("is_ok", True) and manifest_response.get("corrected_message", None) is not None:
             return tool_response
         else:
             return manifest_response.get("corrected_message", "")
