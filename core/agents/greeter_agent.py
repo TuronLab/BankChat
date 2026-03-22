@@ -2,7 +2,7 @@ import os
 import re
 from typing import Any, Dict
 
-from config import ASSETS_PATH
+from config import ASSETS_PATH, CHAT_LOGGER
 from core.agents.models import GreeterAgentResponse
 from core.data.load_data import BaseDataLoader
 from core.session_manager.models import ChatMessage, Role
@@ -60,6 +60,7 @@ class GreeterAgent(AgentWithInferencerBase):
         - If regex finds everything → return immediately.
         - Otherwise → call generate_structured for missing fields.
         """
+        CHAT_LOGGER.info("Trying to find user data by regex")
         processed = self.try_find_user_data_with_regex(message)
         extracted = processed["extracted"]
 
@@ -70,6 +71,7 @@ class GreeterAgent(AgentWithInferencerBase):
             iban=extracted.get("iban")
         )
         if customer is not None:
+            CHAT_LOGGER.info("User authenticated by using regex")
             return GreeterAgentResponse(
                 client=customer,
                 message=read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "successful_logging_message.md"))
@@ -93,6 +95,7 @@ class GreeterAgent(AgentWithInferencerBase):
           }
         }
 
+        CHAT_LOGGER.info("Trying to authenticate the user by obtaining its credentials with LLMs")
         # Call structured inference
         structured_output = self.inferencer.generate_structured(
             conversation = [
@@ -113,6 +116,7 @@ Message:
             customer = self.database_loader.find_customer(name=structured_output.get("name"), phone=structured_output.get("phone"), iban=structured_output.get("iban"))
             # If we have found him in the database
             if customer is not None:
+                CHAT_LOGGER.info("Successful user authentication")
                 session.chat_iterations.append(ChatMessage(role=Role.USER, message=message))
                 successful_logging_message = read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "successful_logging_message.md"))
                 session.chat_iterations.append(ChatMessage(role=Role.ASSISTANT, message=successful_logging_message))
@@ -121,6 +125,7 @@ Message:
                     message=successful_logging_message
                 )
             else:  # If we haven't found him, we return a message with more detail about the name found
+                CHAT_LOGGER.warning("We haven't found the specified user in the database. Maybe it's not a client")
                 user_metadata = " | ".join([structured_output.get(k) for k in ("name", "phone", "iban") if bool(structured_output.get(k))])
                 return GreeterAgentResponse(
                     message=read_markdown(
@@ -128,4 +133,5 @@ Message:
                     ).replace("{{USER_DATA}}", user_metadata)
                 )
 
+        CHAT_LOGGER.warning("We couldn't success with the client identification. Asking the client to submit their identification again.")
         return GreeterAgentResponse(message=read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "error_authentication.md")))
