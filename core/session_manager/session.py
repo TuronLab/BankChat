@@ -21,7 +21,7 @@ class Session:
         Args:
             client (Client): The client associated with the session.
         """
-        self.session_id: SessionId = SessionId(uuid.uuid4())
+        self.session_id: SessionId | str = str(uuid.uuid4())
         self.client: Client = client
         self.state: State = State.VERIFYING
         self.session_creation: datetime = datetime.now()

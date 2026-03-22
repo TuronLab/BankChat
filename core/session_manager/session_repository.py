@@ -67,7 +67,7 @@ class NoStorageRepository(SessionRepository):
         """
         Initialize an empty in-memory session storage.
         """
-        self._sessions: Dict[SessionId, Session] = {}
+        self._sessions: Dict[SessionId | str, Session] = {}
 
     def save(self, session: Session) -> None:
         """
@@ -78,7 +78,7 @@ class NoStorageRepository(SessionRepository):
         """
         self._sessions[session.session_id] = session
 
-    def delete(self, session_id) -> None:
+    def delete(self, session_id: str) -> None:
         """
         Delete a session from memory if it exists.
 
@@ -87,7 +87,7 @@ class NoStorageRepository(SessionRepository):
         """
         self._sessions.pop(session_id, None)
 
-    def get(self, session_id) -> Session:
+    def get(self, session_id: str) -> Session:
         """
         Retrieve a session by its ID.
 
