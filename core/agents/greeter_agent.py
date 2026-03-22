@@ -113,9 +113,12 @@ Message:
             customer = self.database_loader.find_customer(name=structured_output.get("name"), phone=structured_output.get("phone"), iban=structured_output.get("iban"))
             # If we have found him in the database
             if customer is not None:
+                session.chat_iterations.append(ChatMessage(role=Role.USER, message=message))
+                successful_logging_message = read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "successful_logging_message.md"))
+                session.chat_iterations.append(ChatMessage(role=Role.ASSISTANT, message=successful_logging_message))
                 return GreeterAgentResponse(
                     client=customer,
-                    message=read_markdown(os.path.join(ASSETS_PATH, "greeter_agent", "successful_logging_message.md"))
+                    message=successful_logging_message
                 )
             else:  # If we haven't found him, we return a message with more detail about the name found
                 user_metadata = " | ".join([structured_output.get(k) for k in ("name", "phone", "iban") if bool(structured_output.get(k))])
