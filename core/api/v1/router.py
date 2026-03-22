@@ -1,18 +1,37 @@
 import os
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
-from config import ASSETS_PATH
-from core.session_manager.models import ChatMessage
+from config import ASSETS_PATH, OPENAI_KEY, PROJECT_PATH, CHAT_LOGGER
+from core.agents.bouncer_agent import BouncerAgent
+from core.agents.greeter_agent import GreeterAgent
+from core.agents.specialist_agent import SpecialistAgent
+from core.agents.tools.tools import get_client_financial_overview, get_expert_contact_details, \
+    get_client_profile_summary, get_total_liquidity, get_account_balance
+from core.data.load_data import JSONCustomerDataLoader
+from core.inferencer import OpenAIInferencer
+from core.orchestrator import Orchestrator
 from core.session_manager.session_manager import SessionManager
 from core.session_manager.session_repository import NoStorageRepository
 from core.utils import read_markdown
-from models import Response
+from core.api.v1.models import Response
 
 router = APIRouter()
 
 manager = SessionManager(NoStorageRepository())
+inferencer_engine = OpenAIInferencer(model="gpt-4.1-mini", api_key=OPENAI_KEY)
+database_loader=JSONCustomerDataLoader(Path(os.path.join(PROJECT_PATH, "database_example", "dataset_example.json")))
+tools = [get_account_balance, get_total_liquidity, get_client_profile_summary, get_expert_contact_details, get_client_financial_overview]
+
+orchestrator = Orchestrator(
+    inferencer_engine=inferencer_engine,
+    database_loader=database_loader,
+    greeter_agent=GreeterAgent(database_loader=database_loader, inferencer=inferencer_engine),
+    bouncer_agent=BouncerAgent(),
+    specialist_agent=SpecialistAgent(inferencer=inferencer_engine, tools=tools)
+)
 
 @router.get("/healthcheck")
 def healthcheck():
@@ -26,13 +45,21 @@ def get_conf():
         content={
             "manager": type(manager).__name__,
             "repository": type(manager.repository).__name__,
+            "inferencer_engine": {"type": type(orchestrator.inferencer_engine).__name__, "model": orchestrator.inferencer_engine.model},
+            "database_loader": type(orchestrator.database_loader).__name__,
+            "greeter_agent": type(orchestrator.greeter_agent).__name__,
+            "bouncer_gent": type(orchestrator.bouncer_agent).__name__,
+            "specialist_agent": type(orchestrator.specialist_agent).__name__
+
         }
     )
 
 
 @router.post("/start", response_model=Response)
 def start():
+    CHAT_LOGGER.info("Creating session...")
     session = manager.create_session(client=None)
+    CHAT_LOGGER.info(f"Session created with id `{session.session_id}`")
 
     return Response(
         session_id=str(session.session_id),
@@ -40,19 +67,19 @@ def start():
     )
 
 
-@router.post("/message")
+@router.post("/message", response_model=Response)
 def message(req: Response):
     try:
+        CHAT_LOGGER.info("Trying to identify the requested session...")
         session = manager.get_session(req.session_id)
+        CHAT_LOGGER.info("Successful identification.")
     except KeyError:
-        raise HTTPException(status_code=404, detail="Session not found")
+        CHAT_LOGGER.error("Session id not found.")
+        raise HTTPException(status_code=404, detail="Session id not found")
 
-    response = f"Echo: {req.message}"
+    response = orchestrator(session=session, message=req.message)
 
-    session.add_chat_iteration(
-        ChatMessage(
-
-        )
+    return Response(
+        session_id=session.session_id,
+        message=response
     )
-
-    return {"response": response}
