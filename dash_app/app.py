@@ -1,6 +1,6 @@
 import os
 import requests
-from dash import Dash, html, dcc, Input, Output, State, ctx
+from dash import Dash, html, dcc, Input, Output, State
 
 # =========================
 # Config
@@ -8,7 +8,7 @@ from dash import Dash, html, dcc, Input, Output, State, ctx
 BASE_URL = os.getenv("FASTAPI_BASE_URL", "http://localhost:8000")
 
 # =========================
-# Helpers
+# API Helpers
 # =========================
 def start_conversation():
     res = requests.post(f"{BASE_URL}/start")
@@ -34,9 +34,10 @@ app = Dash(__name__)
 app.layout = html.Div([
     html.H2("💬 Chat App"),
 
-    # Store session + messages
+    # Stores
     dcc.Store(id="session-store"),
     dcc.Store(id="chat-store", data=[]),
+    dcc.Store(id="pending-message"),
 
     # Chat window
     html.Div(id="chat-window", style={
@@ -48,12 +49,17 @@ app.layout = html.Div([
     }),
 
     # Input
-    dcc.Input(id="user-input", type="text", style={"width": "70%"}),
+    dcc.Input(
+        id="user-input",
+        type="text",
+        placeholder="Type a message...",
+        style={"width": "70%"}
+    ),
     html.Button("Send", id="send-btn", n_clicks=0),
 
     html.Br(), html.Br(),
 
-    # Restart
+    # Restart button
     html.Button("🔄 Restart Conversation", id="restart-btn", n_clicks=0)
 ])
 
@@ -81,28 +87,61 @@ def start_or_restart(n_clicks):
 
 
 # =========================
-# Send message
+# 1. Show user message instantly
 # =========================
 @app.callback(
     Output("chat-store", "data", allow_duplicate=True),
+    Output("pending-message", "data"),
+    Output("user-input", "value"),
     Input("send-btn", "n_clicks"),
+    Input("user-input", "n_submit"),  # 👈 ENTER key support
     State("user-input", "value"),
+    State("chat-store", "data"),
+    prevent_initial_call=True
+)
+def add_user_message(n_clicks, n_submit, user_input, chat):
+    if not user_input:
+        return chat, None, ""
+
+    chat = chat or []
+
+    # Add user message instantly
+    chat.append({"role": "user", "message": user_input})
+
+    return chat, user_input, ""
+
+
+# =========================
+# 2. Call API and append response
+# =========================
+@app.callback(
+    Output("chat-store", "data", allow_duplicate=True),
+    Input("pending-message", "data"),
     State("session-store", "data"),
     State("chat-store", "data"),
     prevent_initial_call=True
 )
-def handle_message(n_clicks, user_input, session_id, chat):
-    if not user_input:
+def process_message(pending_message, session_id, chat):
+    if not pending_message:
         return chat
 
-    # Add user message
-    chat.append({"role": "user", "message": user_input})
+    chat = chat or []
 
-    # Call API
-    data = send_message(session_id, user_input)
+    # Optional: show typing indicator
+    chat.append({"role": "assistant", "message": "Typing..."})
 
-    # Add assistant response
-    chat.append({"role": "assistant", "message": data["message"]})
+    try:
+        data = send_message(session_id, pending_message)
+        response_text = data["message"]
+
+        # Replace "Typing..." with real response
+        chat[-1] = {"role": "assistant", "message": response_text}
+
+    except Exception as e:
+        chat[-1] = {
+            "role": "assistant",
+            "message": f"Error: {str(e)}"
+        }
 
     return chat
 
@@ -115,6 +154,9 @@ def handle_message(n_clicks, user_input, session_id, chat):
     Input("chat-store", "data")
 )
 def render_chat(chat):
+    if not chat:
+        return []
+
     elements = []
 
     for msg in chat:
@@ -141,7 +183,7 @@ def render_chat(chat):
 
 
 # =========================
-# Run
+# Run app
 # =========================
 if __name__ == "__main__":
     app.run(debug=True)
