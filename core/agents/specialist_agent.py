@@ -158,7 +158,7 @@ class SpecialistAgent(AgentWithInferencerBase):
                 ChatMessage(
                     role=Role.ASSISTANT,
                     message=read_markdown(
-                        os.path.join(ASSETS_PATH, "specialist_agent", "manifest.md")
+                        os.path.join(ASSETS_PATH, "specialist_agent", "constitution.md")
                     ).replace("{{FINAL_RESPONSE}}", tool_response).replace("{{USER_REQUEST}}", user_query)
                 )
             ],
