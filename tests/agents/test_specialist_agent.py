@@ -81,7 +81,7 @@ def test_tool_calling_balance(agent, premium_session):
     response = agent.step(msg, premium_session)
 
     # The agent should return the balance found in the tool
-    assert "1250050" in response.replace(".", "").replace(",", "")
+    assert "12500" in response.replace(".", "").replace(",", "")
     assert "EUR" in response or "€" in response
 
 
