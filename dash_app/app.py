@@ -38,6 +38,7 @@ app.layout = html.Div([
     dcc.Store(id="session-store"),
     dcc.Store(id="chat-store", data=[]),
     dcc.Store(id="pending-message"),
+    dcc.Store(id="processing-trigger"),
 
     # Chat window
     html.Div(id="chat-window", style={
@@ -87,14 +88,14 @@ def start_or_restart(n_clicks):
 
 
 # =========================
-# 1. Show user message instantly
+# 1. Add user message instantly (Enter + Button)
 # =========================
 @app.callback(
     Output("chat-store", "data", allow_duplicate=True),
     Output("pending-message", "data"),
     Output("user-input", "value"),
     Input("send-btn", "n_clicks"),
-    Input("user-input", "n_submit"),  # 👈 ENTER key support
+    Input("user-input", "n_submit"),
     State("user-input", "value"),
     State("chat-store", "data"),
     prevent_initial_call=True
@@ -105,43 +106,64 @@ def add_user_message(n_clicks, n_submit, user_input, chat):
 
     chat = chat or []
 
-    # Add user message instantly
     chat.append({"role": "user", "message": user_input})
 
     return chat, user_input, ""
 
 
 # =========================
-# 2. Call API and append response
+# 2. Show "Typing..."
 # =========================
 @app.callback(
     Output("chat-store", "data", allow_duplicate=True),
+    Output("processing-trigger", "data"),
     Input("pending-message", "data"),
+    State("chat-store", "data"),
+    prevent_initial_call=True
+)
+def show_typing(pending_message, chat):
+    if not pending_message:
+        return chat, None
+
+    chat = chat or []
+
+    chat.append({"role": "assistant", "message": "Typing..."})
+
+    return chat, pending_message
+
+
+# =========================
+# 3. Call API and replace "Typing..."
+# =========================
+@app.callback(
+    Output("chat-store", "data", allow_duplicate=True),
+    Input("processing-trigger", "data"),
     State("session-store", "data"),
     State("chat-store", "data"),
     prevent_initial_call=True
 )
-def process_message(pending_message, session_id, chat):
-    if not pending_message:
+def process_message(trigger, session_id, chat):
+    if not trigger:
         return chat
 
     chat = chat or []
 
-    # Optional: show typing indicator
-    chat.append({"role": "assistant", "message": "Typing..."})
-
     try:
-        data = send_message(session_id, pending_message)
+        data = send_message(session_id, trigger)
         response_text = data["message"]
 
         # Replace "Typing..." with real response
-        chat[-1] = {"role": "assistant", "message": response_text}
+        if chat and chat[-1]["message"] == "Typing...":
+            chat[-1] = {"role": "assistant", "message": response_text}
+        else:
+            chat.append({"role": "assistant", "message": response_text})
 
     except Exception as e:
-        chat[-1] = {
-            "role": "assistant",
-            "message": f"Error: {str(e)}"
-        }
+        if chat and chat[-1]["message"] == "Typing...":
+            chat[-1] = {
+                "role": "assistant",
+                "message": f"Error: {str(e)}"
+            }
 
     return chat
 
@@ -183,7 +205,7 @@ def render_chat(chat):
 
 
 # =========================
-# Run app
+# Run
 # =========================
 if __name__ == "__main__":
     app.run(debug=True)
