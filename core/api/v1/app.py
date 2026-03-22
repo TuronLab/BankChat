@@ -9,3 +9,13 @@ def create_bank_chat_app():
     app = FastAPI()
     app.include_router(router, tags=['Bank Chat'])
     return app
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "core.api.v1.app:create_bank_chat_app",
+        factory=True,
+        host="0.0.0.0",
+        port=8000,
+    )
