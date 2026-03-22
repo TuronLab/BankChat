@@ -10,7 +10,13 @@ from core.utils import read_markdown
 
 class SpecialistAgent(AgentWithInferencerBase):
     """
-    Agent that executes tool calling to provide an answer to the client with hard questions
+    Agent responsible for handling complex user queries by orchestrating tool calls
+    and enforcing safety and compliance checks.
+
+    This agent:
+    - Validates user intent for security risks (e.g., prompt injection, abuse).
+    - Delegates query resolution to external tools via an inferencer.
+    - Post-processes responses to ensure compliance with predefined policies.
     """
 
     def __init__(self, inferencer: Any, tools: List[callable]):
@@ -19,6 +25,21 @@ class SpecialistAgent(AgentWithInferencerBase):
 
 
     def check_user_intentions(self, message: str) -> None | str:
+        """
+        Analyze the user's message to detect unsafe or malicious intentions.
+
+        This method uses a structured LLM call to classify the input against
+        multiple security risk categories such as blackmail, prompt injection,
+        or PII probing.
+
+        Args:
+            message (str): The user input message.
+
+        Returns:
+            None | str:
+                - None if the message is considered safe.
+                - A formatted warning message describing detected issues if unsafe.
+        """
 
         schema = {
             "type": "json_schema",
@@ -92,7 +113,22 @@ class SpecialistAgent(AgentWithInferencerBase):
 
 
     def post_process_checking_manifest_violations(self, user_query: str, tool_response: str):
+        """
+        Validate and correct the generated response against a compliance manifest.
 
+        This method ensures that the tool-generated response adheres to internal
+        policies and guidelines. If violations are detected, a corrected version
+        of the response is returned.
+
+        Args:
+            user_query (str): The original user request.
+            tool_response (str): The response generated via tool execution.
+
+        Returns:
+            str: The validated response. This will be either:
+                - The original tool response if compliant.
+                - A corrected version if violations were found.
+        """
 
         schema = {
             "type": "json_schema",
@@ -136,10 +172,22 @@ class SpecialistAgent(AgentWithInferencerBase):
 
     def step(self, message: str, session: Session) -> str:
         """
-        Extract structured data.
+        Process a single interaction step in the conversation.
 
-        - If regex finds everything → return immediately.
-        - Otherwise → call generate_structured for missing fields.
+        Workflow:
+        1. Check the user's message for unsafe intentions.
+           - If unsafe, return a warning message immediately.
+        2. Append the user message and system prompt to the session history.
+        3. Invoke the inferencer with tool-calling capabilities.
+        4. Post-process the response to ensure compliance with policies.
+        5. Store the final response in the session and return it.
+
+        Args:
+            message (str): The user's input message.
+            session (Session): The current conversation session, including history.
+
+        Returns:
+            str: The final response returned to the user.
         """
 
         intentions = self.check_user_intentions(message)
