@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  bank_chat_api:
+    build: .
+    image: bank_chat:0.0.1
+    container_name: bank_chat_api
+    env_file:
+      - .env
+    command: >
+      uvicorn core.api.v1.app:create_bank_chat_app
+      --host 0.0.0.0
+      --port 8000
+      --factory
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  bank_chat_dash:
+    build: .
+    image: bank_chat:0.0.1
+    container_name: bank_chat_dash
+    command: python dash_app/app.py
+    environment:
+      - DASH_HOST=0.0.0.0
+      - DASH_PORT=8050
+      - FASTAPI_BASE_URL=http://bank_chat_api:8000
+    ports:
+      - "8050:8050"
+    restart: unless-stopped
