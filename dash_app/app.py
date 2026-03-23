@@ -530,4 +530,8 @@ app.index_string = """
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        host=os.getenv("DASH_HOST", "0.0.0.0"),
+        port=os.getenv("DASH_PORT", 8050),
+        debug=bool(os.getenv("DEBUG_DASH", False))
+    )
