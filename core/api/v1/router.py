@@ -17,7 +17,7 @@ from core.session_manager.custom_exceptions import UnknownSessionIdException
 from core.session_manager.session_manager import SessionManager
 from core.session_manager.session_repository import NoStorageRepository
 from core.utils import read_markdown
-from core.api.v1.models import Response
+from core.api.v1.models import ResponseStartSession, ResponseChat, UserPetitionChat
 
 router = APIRouter()
 
@@ -54,20 +54,20 @@ def get_conf():
     )
 
 
-@router.post("/start", response_model=Response)
+@router.post("/start", response_model=ResponseStartSession)
 def start():
     CHAT_LOGGER.info("Creating session...")
     session = manager.create_session(client=None)
     CHAT_LOGGER.info(f"Session created with id `{session.session_id}`")
 
-    return Response(
+    return ResponseStartSession(
         session_id=str(session.session_id),
         message=read_markdown(os.path.join(ASSETS_PATH, "welcome_message.md"))
     )
 
 
-@router.post("/message", response_model=Response)
-def message(req: Response):
+@router.post("/message", response_model=ResponseChat)
+def message(req: UserPetitionChat):
     if req.message is not None and not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be void")
 
@@ -96,7 +96,7 @@ def message(req: Response):
             detail="Internal server error"
         )
 
-    return Response(
+    return ResponseChat(
         session_id=session.session_id,
         message=response
     )
