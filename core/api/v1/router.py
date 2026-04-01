@@ -69,6 +69,9 @@ def start():
 
 @router.post("/message", response_model=Response)
 def message(req: Response):
+    if req.message is not None and not req.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be void")
+
     try:
         CHAT_LOGGER.info("Trying to identify the requested session...")
         session = manager.get_session(req.session_id)
