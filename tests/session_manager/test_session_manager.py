@@ -1,5 +1,6 @@
 import pytest
 
+from core.session_manager.custom_exceptions import UnknownSessionIdException
 from core.session_manager.models import Client
 from core.session_manager.session_manager import SessionManager
 from core.session_manager.session_repository import NoStorageRepository
@@ -34,5 +35,5 @@ def test_delete_session():
     session = manager.create_session(client=dummy_client)
     manager.delete_session(session.session_id)
 
-    with pytest.raises(KeyError):
+    with pytest.raises(UnknownSessionIdException):
         manager.get_session(session.session_id)
