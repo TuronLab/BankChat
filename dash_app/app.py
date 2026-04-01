@@ -89,10 +89,13 @@ app.layout = html.Div(
     prevent_initial_call=False,
 )
 def start_or_restart(n_clicks):
-    data = start_conversation()
-    return data["session_id"], [
-        {"role": "assistant", "message": data["message"], "kind": "welcome"}
-    ]
+    try:
+        data = start_conversation()
+        return data["session_id"], [
+            {"role": "assistant", "message": data["message"], "kind": "welcome"}
+        ]
+    except Exception as e:
+        return None, [{"role": "assistant", "message": f"Error starting session: {e}", "kind": "error"}]
 
 
 # =========================
