@@ -1,5 +1,7 @@
 import abc
 from typing import Dict
+
+from core.session_manager.custom_exceptions import UnknownSessionIdException
 from core.session_manager.session import Session, SessionId
 
 
@@ -98,9 +100,12 @@ class NoStorageRepository(SessionRepository):
             Session: The requested session.
 
         Raises:
-            KeyError: If the session does not exist.
+            UnknownSessionIdException: If the session id does not exist.
         """
-        return self._sessions[session_id]
+        if session_id in self._sessions.keys():
+            return self._sessions[session_id]
+        else:
+            raise UnknownSessionIdException(f"Session id {session_id}")
 
     def get_all(self) -> Dict:
         """

@@ -1,0 +1,4 @@
+
+
+class UnknownSessionIdException(Exception):
+    pass

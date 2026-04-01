@@ -13,6 +13,7 @@ from core.agents.tools.tools import get_client_financial_overview, get_expert_co
 from core.data.load_data import JSONCustomerDataLoader
 from core.inferencer import OpenAIInferencer
 from core.orchestrator import Orchestrator
+from core.session_manager.custom_exceptions import UnknownSessionIdException
 from core.session_manager.session_manager import SessionManager
 from core.session_manager.session_repository import NoStorageRepository
 from core.utils import read_markdown
@@ -76,9 +77,15 @@ def message(req: Response):
         CHAT_LOGGER.info("Trying to identify the requested session...")
         session = manager.get_session(req.session_id)
         CHAT_LOGGER.info("Successful identification.")
-    except KeyError:
-        CHAT_LOGGER.error("Session id not found.")
-        raise HTTPException(status_code=404, detail="Session id not found")
+    except UnknownSessionIdException as e:
+        CHAT_LOGGER.error(str(e))
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        CHAT_LOGGER.exception(f"Unexpected error while retrieving session {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
 
     response = orchestrator(session=session, message=req.message)
 

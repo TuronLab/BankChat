@@ -5,10 +5,11 @@ import os
 class ColorFormatter(logging.Formatter):
     # ANSI color codes
     COLORS = {
-        logging.INFO:    "\033[0m",          # white / default
-        logging.WARNING: "\033[33m",         # yellow
-        logging.ERROR:   "\033[31m",         # red
-        logging.CRITICAL:"\033[1;31m",       # bright red
+        logging.INFO:        "\033[0m",          # white / default
+        logging.WARNING:     "\033[33m",         # yellow
+        logging.ERROR:       "\033[31m",         # red
+        logging.exception:   "\033[31m",         # red
+        logging.CRITICAL:    "\033[1;31m",       # bright red
     }
     RESET = "\033[0m"
 
