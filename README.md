@@ -13,12 +13,12 @@ All functionality is exposed through a FastAPI-based API and can be accessed via
 
 <details><summary>Click here to see an example of the chat Dash app</summary>
 
-![Conversation Example](conversation_example.png)
+<img src="conversation_example.png" alt="Conversation Example" style="max-width: 450px;margin-top: 30px">
 </details>
 
 <details><summary>Click here to see a diagram with the workflow of the deployed system</summary>
 
-![System Architecture](system_architecture.drawio.png)
+<img src="system_architecture.drawio.png" alt="System Architecture" style="max-width: 450px;margin-top: 30px">
 </details>
 
 ---
