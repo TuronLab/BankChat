@@ -5,7 +5,6 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
 from config import ASSETS_PATH, OPENAI_KEY, PROJECT_PATH, CHAT_LOGGER
-from core.agents.bouncer_agent import BouncerAgent
 from core.agents.greeter_agent import GreeterAgent
 from core.agents.specialist_agent import SpecialistAgent
 from core.agents.tools.tools import get_client_financial_overview, get_expert_contact_details, \
@@ -30,7 +29,6 @@ orchestrator = Orchestrator(
     inferencer_engine=inferencer_engine,
     database_loader=database_loader,
     greeter_agent=GreeterAgent(database_loader=database_loader, inferencer=inferencer_engine),
-    bouncer_agent=BouncerAgent(),
     specialist_agent=SpecialistAgent(inferencer=inferencer_engine, tools=tools)
 )
 
@@ -49,7 +47,6 @@ def get_conf():
             "inferencer_engine": {"type": type(orchestrator.inferencer_engine).__name__, "model": orchestrator.inferencer_engine.model},
             "database_loader": type(orchestrator.database_loader).__name__,
             "greeter_agent": type(orchestrator.greeter_agent).__name__,
-            "bouncer_gent": type(orchestrator.bouncer_agent).__name__,
             "specialist_agent": type(orchestrator.specialist_agent).__name__
 
         }

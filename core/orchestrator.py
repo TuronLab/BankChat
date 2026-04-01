@@ -12,13 +12,11 @@ class Orchestrator:
             inferencer_engine: BaseInferencer,
             database_loader: BaseDataLoader,
             greeter_agent: AgentBase,
-            bouncer_agent: AgentBase,
             specialist_agent: AgentBase,
     ):
         self.inferencer_engine = inferencer_engine
         self.database_loader = database_loader
         self.greeter_agent = greeter_agent
-        self.bouncer_agent = bouncer_agent
         self.specialist_agent = specialist_agent
 
     def __call__(self, session: Session, message: str) -> str:
@@ -31,9 +29,6 @@ class Orchestrator:
                 return greeter_response.message
             else:
                 session.client = greeter_response.client
-
-            ## Bouncer agent (just looks in the Client object found, with all the data of the database)
-            type_client = self.bouncer_agent.step(message=message, session=session)
 
             session.update_state(State.VERIFIED)
 
