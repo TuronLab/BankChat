@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from starlette.responses import JSONResponse
 
 from config import ASSETS_PATH, OPENAI_KEY, PROJECT_PATH, CHAT_LOGGER
+from core.agents.custom_exception import VoidMessageException
 from core.agents.greeter_agent import GreeterAgent
 from core.agents.specialist_agent import SpecialistAgent
 from core.agents.tools.tools import get_client_financial_overview, get_expert_contact_details, \
@@ -84,7 +85,16 @@ def message(req: Response):
             detail="Internal server error"
         )
 
-    response = orchestrator(session=session, message=req.message)
+    try:
+        response = orchestrator(session=session, message=req.message)
+    except VoidMessageException:
+        raise HTTPException(status_code=400, detail="Message cannot be void")
+    except Exception as e:
+        CHAT_LOGGER.exception(f"Unexpected error while retrieving session {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal server error"
+        )
 
     return Response(
         session_id=session.session_id,
