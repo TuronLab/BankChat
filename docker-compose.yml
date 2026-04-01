@@ -21,6 +21,8 @@ services:
     image: bank_chat:0.0.1
     container_name: bank_chat_dash
     command: python dash_app/app.py
+    depends_on:
+      - bank_chat_api
     environment:
       - DASH_HOST=0.0.0.0
       - DASH_PORT=8050
