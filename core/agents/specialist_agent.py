@@ -2,6 +2,7 @@ import os
 from typing import Any, List
 
 from config import ASSETS_PATH, CHAT_LOGGER
+from core.agents.custom_exception import VoidMessageException
 from core.session_manager.models import ChatMessage, Role
 from core.session_manager.session import Session
 from core.agents.agent_base import AgentWithInferencerBase
@@ -188,7 +189,13 @@ class SpecialistAgent(AgentWithInferencerBase):
 
         Returns:
             str: The final response returned to the user.
+
+        Raises:
+            VoidMessageException: If message is null or void
         """
+
+        if message is None or not message.strip():
+            raise VoidMessageException("Void message")
 
         CHAT_LOGGER.info("Checking user's malicious intentions")
         intentions = self.check_user_intentions(message)

@@ -3,6 +3,7 @@ import re
 from typing import Any, Dict
 
 from config import ASSETS_PATH, CHAT_LOGGER
+from core.agents.custom_exception import VoidMessageException
 from core.agents.models import GreeterAgentResponse
 from core.data.load_data import BaseDataLoader
 from core.session_manager.models import ChatMessage, Role
@@ -59,7 +60,14 @@ class GreeterAgent(AgentWithInferencerBase):
 
         - If regex finds everything → return immediately.
         - Otherwise → call generate_structured for missing fields.
+
+        Raises:
+            VoidMessageException: If message is null or void
         """
+
+        if message is None or not message.strip():
+            raise VoidMessageException("Void message")
+
         CHAT_LOGGER.info("Trying to find user data by regex")
         processed = self.try_find_user_data_with_regex(message)
         extracted = processed["extracted"]
