@@ -1,4 +1,6 @@
-.ai-eng-challenge-venv
+.bank-chat-venv
 .idea
 .env
 .logs
+__pyenv__
+.pytest_cache
